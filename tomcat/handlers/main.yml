@@ -1,0 +1,10 @@
+---
+- name: start tomcat
+  service:
+    name: tomcat
+    state: started
+
+- name: restart tomcat
+  service:
+    name: tomcat
+    state: restarted

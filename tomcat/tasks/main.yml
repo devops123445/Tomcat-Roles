@@ -1,0 +1,48 @@
+---
+- name: install jdk & tomcat
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - java-1.8.0-openjdk-devel
+    - tomcat
+    - tomcat-webapps
+    - tomcat-admin-webapps
+    - wget
+  notify:
+    - start tomcat
+- name: change folder permissions
+  file:
+    path: /usr/share/tomcat/
+    state: directory
+    recurse: yes
+    owner: ram
+    group: tomcat
+    mode: 0777
+- name: delete existing file
+  file:
+    path: /usr/share/tomcat/conf/tomcat-users.xml
+    state: absent
+- name: copy user.xml
+  template:
+    src: tomcat-users.xml
+    dest: "/usr/share/tomcat/conf/tomcat-users.xml"
+    mode: 0777
+
+  notify:
+    - start tomcat
+  
+- name: copy shell script
+  template:
+    src: deploy.sh
+    dest: /tmp
+    mode: 0777
+
+- name: excute shell
+  command: sh deploy.sh
+  args:
+    chdir: /tmp
+  register: deploy
+
+- debug: var="deploy.stdout_lines + [deploy.stderr]"
+
